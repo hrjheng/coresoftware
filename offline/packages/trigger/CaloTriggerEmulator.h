@@ -1,19 +1,14 @@
 #ifndef TRIGGER_CALOTRIGGEREMULATOR_H
 #define TRIGGER_CALOTRIGGEREMULATOR_H
 
-#include "LL1Outv1.h"
+//#include "LL1Outv1.h"
 #include "TriggerDefs.h"
-#include "TriggerPrimitiveContainerv1.h"
-#include "TriggerPrimitivev1.h"
 
 #include <fun4all/SubsysReco.h>
 
-#include <TEfficiency.h>
-#include <TH2.h>
-#include <TProfile.h>
-#include <TTree.h>
-
 #include <cstdint>
+#include <map>
+#include <vector>
 
 // Forward declarations
 class CDBHistos;
@@ -25,11 +20,11 @@ class TowerInfoContainer;
 class Fun4AllHistoManager;
 class PHCompositeNode;
 class TFile;
+class TH1;
 class TNtuple;
 class TTree;
 class TProfile;
 class TEfficiency;
-class TH2D;
 
 class CaloTriggerEmulator : public SubsysReco
 {
@@ -78,9 +73,14 @@ class CaloTriggerEmulator : public SubsysReco
   //! Set TriggerType
   void setTriggerType(const std::string &name);
   void setTriggerType(TriggerDefs::TriggerId triggerid);
+
+  void setOptMaskFile(const std::string &filename) { m_optmask_file = filename; }
+
   void setEmcalLUTFile(const std::string &filename) { m_emcal_lutname = filename; }
   void setHcalinLUTFile(const std::string &filename) { m_hcalin_lutname = filename; }
   void setHcaloutLUTFile(const std::string &filename) { m_hcalout_lutname = filename; }
+
+  void useMax(bool max) { m_use_max = max; }
 
   void useEMCALDefaultLUT(bool def) { m_default_lut_emcal = def; }
   void useHCALINDefaultLUT(bool def) { m_default_lut_hcalin = def; }
@@ -106,14 +106,17 @@ class CaloTriggerEmulator : public SubsysReco
   }
 
   bool CheckFiberMasks(TriggerDefs::TriggerPrimKey key);
+  void LoadFiberMasks();
   bool CheckChannelMasks(TriggerDefs::TriggerSumKey key);
 
   void identify();
 
- protected:
+ private:
   std::string m_ll1_nodename;
   std::string m_prim_nodename;
   std::string m_waveform_nodename;
+
+  std::string m_optmask_file;
 
   std::string m_emcal_lutname;
   std::string m_hcalin_lutname;
@@ -124,6 +127,7 @@ class CaloTriggerEmulator : public SubsysReco
 
   TriggerDefs::TriggerId m_triggerid = TriggerDefs::TriggerId::noneTId;
 
+  bool m_use_max{true};
   bool m_do_hcalin{false};
   bool m_do_hcalout{false};
   bool m_do_emcal{false};
@@ -132,12 +136,9 @@ class CaloTriggerEmulator : public SubsysReco
   bool m_default_lut_hcalin{false};
   bool m_default_lut_hcalout{false};
   bool m_default_lut_emcal{false};
-  bool m_default_lut_mbd{false};
-
   bool m_force_hcalin{false};
   bool m_force_hcalout{false};
   bool m_force_emcal{false};
-  bool m_force_mbd{false};
 
   //! Waveform conatiner
   TowerInfoContainer *m_waveforms_hcalin{nullptr};
@@ -159,16 +160,14 @@ class CaloTriggerEmulator : public SubsysReco
 
   TriggerPrimitiveContainer *m_primitives_emcal_ll1{nullptr};
 
-
   unsigned int m_l1_adc_table[1024]{};
   unsigned int m_l1_adc_table_time[1024]{};
   unsigned int m_l1_slewing_table[4096]{};
   unsigned int m_l1_hcal_table[4096]{};
 
-
-  std::map<unsigned int, TH1I*> h_emcal_lut;
-  std::map<unsigned int, TH1I*> h_hcalin_lut;
-  std::map<unsigned int, TH1I*> h_hcalout_lut;
+  std::map<unsigned int, TH1 *> h_emcal_lut;
+  std::map<unsigned int, TH1 *> h_hcalin_lut;
+  std::map<unsigned int, TH1 *> h_hcalout_lut;
 
   CDBHistos *cdbttree_emcal{nullptr};
   CDBHistos *cdbttree_hcalin{nullptr};
@@ -204,14 +203,14 @@ class CaloTriggerEmulator : public SubsysReco
 
   unsigned int m_nhit1, m_nhit2, m_timediff1, m_timediff2, m_timediff3;
 
-  std::map<unsigned int, std::vector<unsigned int> > m_peak_sub_ped_emcal;
-  std::map<unsigned int, std::vector<unsigned int> > m_peak_sub_ped_mbd;
-  std::map<unsigned int, std::vector<unsigned int> > m_peak_sub_ped_hcalin;
-  std::map<unsigned int, std::vector<unsigned int> > m_peak_sub_ped_hcalout;
+  std::map<unsigned int, std::vector<unsigned int>> m_peak_sub_ped_emcal;
+  std::map<unsigned int, std::vector<unsigned int>> m_peak_sub_ped_mbd;
+  std::map<unsigned int, std::vector<unsigned int>> m_peak_sub_ped_hcalin;
+  std::map<unsigned int, std::vector<unsigned int>> m_peak_sub_ped_hcalout;
 
   //! Verbosity.
-  int m_nevent;
-  int m_npassed;
+  int m_nevent{0};
+  int m_npassed{0};
   int m_n_sums;
   int m_n_primitives;
   int m_trig_sub_delay;
@@ -220,9 +219,7 @@ class CaloTriggerEmulator : public SubsysReco
   bool m_single_threshold{true};
   unsigned int m_threshold{1};
   unsigned int m_threshold_calo[4] = {0};
-  int m_isdata{1};
-  int m_nsamples = 31;
-  int m_idx{3};
+  int m_nsamples{31};
 
   std::vector<unsigned int> m_masks_fiber;
   std::vector<unsigned int> m_masks_channel;

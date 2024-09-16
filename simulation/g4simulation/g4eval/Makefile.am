@@ -5,7 +5,7 @@ AUTOMAKE_OPTIONS = foreign
 
 AM_CPPFLAGS = \
   -I$(includedir) \
-  -I$(OFFLINE_MAIN)/include \
+  -isystem$(OFFLINE_MAIN)/include \
   -isystem`root-config --incdir`
 
 AM_LDFLAGS = \
@@ -68,7 +68,7 @@ pkginclude_HEADERS = \
   ClusKeyIter.h \
   TrackClusEvaluator.h \
   TrkrClusterIsMatcher.h \
-	TrkrClusLoc.h \
+  TrkrClusLoc.h \
   TrackEvaluation.h \
   TrackEvaluationContainer.h \
   TrackEvaluationContainerv1.h  \

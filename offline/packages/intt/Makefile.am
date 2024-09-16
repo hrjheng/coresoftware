@@ -5,13 +5,15 @@ AUTOMAKE_OPTIONS = foreign
 
 AM_CPPFLAGS = \
   -I$(includedir) \
-  -isystem$(OFFLINE_MAIN)/include  \
-  -isystem$(ROOTSYS)/include
+  -isystem$(OFFLINE_MAIN)/include \
+  -isystem$(ROOTSYS)/include \
+  -isystem$(OPT_SPHENIX)/include
 
 AM_LDFLAGS = \
   -L$(libdir) \
+  -L$(OFFLINE_MAIN)/lib \
   -L$(ROOTSYS)/lib \
-  -L$(OFFLINE_MAIN)/lib
+  -L$(OPT_SPHENIX)/lib
 
 if USE_ONLINE
 
@@ -46,13 +48,20 @@ pkginclude_HEADERS = \
   InttFelixMap.h \
   InttMap.h \
   InttMapping.h \
+  InttOdbcQuery.h \
   InttSurveyMap.h \
   InttSurveyMapv1.h \
-  InttVertexFinder.h \
+  InttXYVertexFinder.h \
+  InttZVertexFinder.h \
   InttVertexMap.h \
   InttVertexMapv1.h \
   InttVertex.h \
   InttVertexv1.h
+
+noinst_HEADERS = \
+  INTTZvtx.h \
+  INTTXYvtx.h \
+  InttVertexUtil.h 
 
 ROOTDICTS = \
   CylinderGeomIntt_Dict.cc \
@@ -96,16 +105,22 @@ libintt_la_SOURCES = \
   InttFeeMapv1.cc \
   InttFelixMap.cc \
   InttMapping.cc \
+  InttOdbcQuery.cc \
   InttMap.cc \
   InttSurveyMap.cc \
   InttSurveyMapv1.cc \
-  InttVertexFinder.cc
+  InttVertexUtil.cc \
+  InttXYVertexFinder.cc \
+  InttZVertexFinder.cc \
+  INTTXYvtx.cc \
+  INTTZvtx.cc
 
 libintt_la_LIBADD = \
   libintt_io.la \
   -lcdbobjects \
   -lCLHEP \
   -lffarawobjects \
+  -lodbc++ \
   -lphg4hit \
   -lSubsysReco
 
@@ -129,7 +144,8 @@ libintt_io_la_LIBADD = \
   -lg4detectors_io \
   -lphool \
   -ltrack_io \
-  -ltrackbase_historic_io
+  -ltrackbase_historic_io \
+  -lglobalvertex 
 
 endif
 

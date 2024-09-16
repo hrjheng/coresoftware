@@ -10,7 +10,7 @@ AM_LDFLAGS = \
 
 AM_CPPFLAGS = \
   -I$(includedir) \
-  -I$(OFFLINE_MAIN)/include \
+  -isystem$(OFFLINE_MAIN)/include \
   -isystem$(ROOTSYS)/include
 
 pkginclude_HEADERS = \
@@ -25,8 +25,10 @@ libcalovalid_la_LIBADD = \
   -lfun4all \
   -lglobalvertex_io \
   -lmbd_io \
+  -lzdcinfo_io \
   -lphool \
   -lSubsysReco \
+  -lffarawobjects \
   -lqautils
 
 ################################################

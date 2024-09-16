@@ -14,6 +14,8 @@ AM_CPPFLAGS = \
   -isystem$(ROOTSYS)/include
 
 pkginclude_HEADERS = \
+  ConstituentsinJets.h \
+  JetQADefs.h \
   StructureinJets.h \
   TrksInJetQA.h \
   TrksInJetQAHist.h \
@@ -27,9 +29,12 @@ pkginclude_HEADERS = \
   TrksInJetQAClustManager.h \
   TrksInJetQATrkManager.h \
   TrksInJetQAJetManager.h \
-  JetSeedCount.h
+  RhosinEvent.h \
+  JetSeedCount.h \
+  JetKinematicCheck.h
 
 libjetqa_la_SOURCES = \
+  ConstituentsinJets.cc\
   StructureinJets.cc \
   TrksInJetQA.cc \
   TrksInJetQABaseFiller.cc \
@@ -40,14 +45,19 @@ libjetqa_la_SOURCES = \
   TrksInJetQAClustManager.cc \
   TrksInJetQATrkManager.cc \
   TrksInJetQAJetManager.cc \
-  JetSeedCount.cc
+  RhosinEvent.cc \
+  JetSeedCount.cc \
+  JetKinematicCheck.cc
 
 libjetqa_la_LIBADD = \
   -L$(libdir) \
   -L$(OFFLINE_MAIN)/lib \
   -lcalo_io \
+  -ljetbackground\
+  -lg4jets \
   -lcentrality_io \
   -lparticleflow_io \
+  -lffarawobjects \
   -lfun4all \
   -lphool \
   -lg4eval \
@@ -77,3 +87,5 @@ testexternals.C:
 
 clean-local:
 	rm -f $(BUILT_SOURCES)
+
+
