@@ -205,7 +205,7 @@ void PHG4MvtxDetector::ConstructMe(G4LogicalVolume* logicWorld)
   // since some layers are (touching) double layers
   // this reads in the ITS stave geometry from a file and constructs the layer from it
   ConstructMvtx(logicMVTX);
-  ConstructMvtxPassiveVol(logicMVTX);
+  // ConstructMvtxPassiveVol(logicMVTX);
 
   AddGeometryNode();
   return;
