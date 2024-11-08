@@ -45,6 +45,8 @@ class PHG4InttHitReco : public SubsysReco, public PHParameterInterface
 
   void setLocalHotStripMaskFile(const std::string& name) { m_localHotStripFileName = name; }
 
+  void setDiffusionWidth(double val) { m_diffusion_width = val; }
+
  protected:
   std::string m_Detector = "INTT";
   std::string m_HitNodeName;
@@ -85,6 +87,8 @@ class PHG4InttHitReco : public SubsysReco, public PHParameterInterface
   double m_pixel_thresholdrat{0.01};
   float max_g4hitstep{2.0};
   bool record_ClusHitsVerbose{false};
+
+  double m_diffusion_width{100.0e-04}; // default: 5 um = 5.0e-04 cm
 
  public:
   void set_pixel_thresholdrat(double val) { m_pixel_thresholdrat = val; };

@@ -1,8 +1,8 @@
 #include "PHG4InttHitReco.h"
 
-#include <intt/CylinderGeomIntt.h>
+#include "intt/CylinderGeomIntt.h"
 
-#include <g4detectors/PHG4CylinderGeom.h>  // for PHG4CylinderGeom
+#include "g4detectors/PHG4CylinderGeom.h"  // for PHG4CylinderGeom
 #include <g4detectors/PHG4CylinderGeomContainer.h>
 
 #include <g4tracking/TrkrTruthTrack.h>
@@ -341,7 +341,7 @@ int PHG4InttHitReco::process_event(PHCompositeNode *topNode)
     float time = (hiter->second->get_t(0) + hiter->second->get_t(1)) / 2.0;
 
     // I made this (small) diffusion up for now, we will get actual values for the Intt later
-    double diffusion_width = 5.0e-04;  // diffusion radius 5 microns, in cm
+    double diffusion_width = m_diffusion_width;  // diffusion radius 5 microns, in cm
 
     const int ladder_z_index = hiter->second->get_ladder_z_index();
     const int ladder_phi_index = hiter->second->get_ladder_phi_index();
@@ -416,13 +416,14 @@ int PHG4InttHitReco::process_event(PHCompositeNode *topNode)
 
     // skip this hit if it involves an unreasonable  number of pixels
     // this skips it if either the xbin or ybin range traversed is greater than 8 (for 8 adding two pixels at each end makes the range 12)
-    if (maxstrip_y - minstrip_y > 12 || maxstrip_z - minstrip_z > 12)
+    const int nmaxstrips = 127;
+    if (maxstrip_y - minstrip_y > nmaxstrips || maxstrip_z - minstrip_z > nmaxstrips)
     {
       continue;
     }
     // this hit is skipped above if this dimensioning would be exceeded
-    double stripenergy[13][13] = {};  // init to 0
-    double stripeion[13][13] = {};    // init to 0
+    double stripenergy[nmaxstrips+1][nmaxstrips+1] = {};  // init to 0
+    double stripeion[nmaxstrips+1][nmaxstrips+1] = {};    // init to 0
 
     int nsegments = 10;
     // Loop over track segments and diffuse charge at each segment location, collect energy in pixels
