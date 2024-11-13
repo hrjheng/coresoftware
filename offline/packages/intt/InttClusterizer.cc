@@ -55,12 +55,20 @@ bool InttClusterizer::ladder_are_adjacent(const std::pair<TrkrDefs::hitkey, Trkr
 {
   if (get_z_clustering(layer))
   {
-    if (fabs(InttDefs::getCol(lhs.first) - InttDefs::getCol(rhs.first)) <= 1)
+    //! This allows diagonally adjacent cells to be clustered together, which is not desired for INTT
+    // if (fabs(InttDefs::getCol(lhs.first) - InttDefs::getCol(rhs.first)) <= 1)
+    // {
+    //   if (fabs(InttDefs::getRow(lhs.first) - InttDefs::getRow(rhs.first)) <= 1)
+    //   {
+    //     return true;
+    //   }
+    // }
+
+    // Only allow horizontally or vertically adjacent cells to be clustered together
+    // std::cout << PHWHERE << " Z clustering enabled, diagonally adjacent cells are not clustered" << std::endl;
+    if (fabs(InttDefs::getCol(lhs.first) - InttDefs::getCol(rhs.first)) + fabs(InttDefs::getRow(lhs.first) - InttDefs::getRow(rhs.first)) <= 1)
     {
-      if (fabs(InttDefs::getRow(lhs.first) - InttDefs::getRow(rhs.first)) <= 1)
-      {
-        return true;
-      }
+      return true;
     }
   }
   else if (fabs(InttDefs::getCol(lhs.first) - InttDefs::getCol(rhs.first)) == 0)
@@ -78,12 +86,20 @@ bool InttClusterizer::ladder_are_adjacent(RawHit* lhs, RawHit* rhs, const int la
 {
   if (get_z_clustering(layer))
   {
-    if (fabs(lhs->getPhiBin() - rhs->getPhiBin()) <= 1)  // col
+    //! This allows diagonally adjacent cells to be clustered together, which is not desired for INTT
+    // if (fabs(lhs->getPhiBin() - rhs->getPhiBin()) <= 1)  // col
+    // {
+    //   if (fabs(lhs->getTBin() - rhs->getTBin()) <= 1)  // Row
+    //   {
+    //     return true;
+    //   }
+    // }
+
+    // Only allow horizontally or vertically adjacent cells to be clustered together
+    // std::cout << PHWHERE << " Z clustering enabled, diagonally adjacent cells are not clustered" << std::endl;
+    if (fabs(lhs->getPhiBin() - rhs->getPhiBin()) + fabs(lhs->getTBin() - rhs->getTBin()) <= 1)
     {
-      if (fabs(lhs->getTBin() - rhs->getTBin()) <= 1)  // Row
-      {
-        return true;
-      }
+      return true;
     }
   }
   else if (fabs(lhs->getPhiBin() - rhs->getPhiBin()) <= 1)
