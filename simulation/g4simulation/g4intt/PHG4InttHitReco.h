@@ -88,7 +88,7 @@ class PHG4InttHitReco : public SubsysReco, public PHParameterInterface
   float max_g4hitstep{2.0};
   bool record_ClusHitsVerbose{false};
 
-  double m_diffusion_width{100.0e-04}; // default: 5 um = 5.0e-04 cm
+  double m_diffusion_width{5.0e-04}; // default: 5 um = 5.0e-04 cm
 
  public:
   void set_pixel_thresholdrat(double val) { m_pixel_thresholdrat = val; };

@@ -1,8 +1,8 @@
-#include "PHG4InttHitReco.h"
+#include <PHG4InttHitReco.h>
 
-#include "intt/CylinderGeomIntt.h"
+#include <intt/CylinderGeomIntt.h>
 
-#include "g4detectors/PHG4CylinderGeom.h"  // for PHG4CylinderGeom
+#include <g4detectors/PHG4CylinderGeom.h>  // for PHG4CylinderGeom
 #include <g4detectors/PHG4CylinderGeomContainer.h>
 
 #include <g4tracking/TrkrTruthTrack.h>

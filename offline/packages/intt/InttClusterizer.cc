@@ -1,5 +1,5 @@
-#include "InttClusterizer.h"
-#include "CylinderGeomIntt.h"
+#include <InttClusterizer.h>
+#include <CylinderGeomIntt.h>
 
 #include <trackbase/InttDefs.h>
 #include <trackbase/TrkrClusterContainerv4.h>
