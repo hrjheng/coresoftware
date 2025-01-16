@@ -261,6 +261,10 @@ int CentralityReco::process_event(PHCompositeNode *topNode)
 
   if (!m_mb_info->isAuAuMinimumBias())
     {
+      if (Verbosity())
+      {
+        std::cout << PHWHERE << " Not AuAu Minimum Bias event" << std::endl;
+      }
       return Fun4AllReturnCodes::EVENT_OK;
     }
 

@@ -105,12 +105,21 @@ int MinimumBiasClassifier::FillMinimumBiasInfo()
 
   if (!vtx)
   {
+    if (Verbosity())
+    {
+      std::cout << PHWHERE << "No vertex" << std::endl;
+    }
+
     m_mb_info->setIsAuAuMinimumBias(false);
     return Fun4AllReturnCodes::EVENT_OK;
   }
 
   if (!vtx->isValid())
   {
+    if (Verbosity())
+    {
+      std::cout << PHWHERE << "Invalid vertex" << std::endl;
+    }
     m_mb_info->setIsAuAuMinimumBias(false);
     return Fun4AllReturnCodes::EVENT_OK;
   }
@@ -128,6 +137,10 @@ int MinimumBiasClassifier::FillMinimumBiasInfo()
 
   if (!m_zdcinfo)
   {
+    if (Verbosity())
+    {
+      std::cout << PHWHERE << "No Zdcinfo node; Setting isAuAuMinimumBias to false" << std::endl;
+    }
     m_mb_info->setIsAuAuMinimumBias(false);
     return Fun4AllReturnCodes::EVENT_OK;
   }
@@ -135,11 +148,15 @@ int MinimumBiasClassifier::FillMinimumBiasInfo()
   //  Z vertex is within range
   if (std::fabs(m_vertex) > m_z_vtx_cut && minbiascheck)
   {
+    if (Verbosity())
+    {
+      std::cout << PHWHERE << "Z vertex is out of range" << std::endl;
+    }
     minbiascheck = false;
   }
   if (Verbosity())
     {
-      std::cout << "Calculating" << std::endl;
+      std::cout << PHWHERE << "Calculating" << std::endl;
     }
 
   // calculate charge sum and n hit
@@ -163,6 +180,10 @@ int MinimumBiasClassifier::FillMinimumBiasInfo()
   // MBD Background cut
   if (m_mbd_charge_sum[1] < m_mbd_north_cut && m_mbd_charge_sum[0] > m_mbd_south_cut  && minbiascheck)
     {
+      if (Verbosity())
+      {
+        std::cout << PHWHERE << " MBD background cut failed" << std::endl;
+      }
       minbiascheck = false;
       //    m_mb_info->setIsAuAuMinimumBias(false);
       //return Fun4AllReturnCodes::EVENT_OK;  
@@ -173,12 +194,20 @@ int MinimumBiasClassifier::FillMinimumBiasInfo()
     {
       if (m_mbd_hit[iside] < 2 && minbiascheck)
 	{
+    if (Verbosity())
+    {
+      std::cout << PHWHERE << " MBD hit cut failed" << std::endl;
+    }
 	  minbiascheck = false;
 	  //m_mb_info->setIsAuAuMinimumBias(false);
 	  //return Fun4AllReturnCodes::EVENT_OK;
 	}
       if (m_zdcinfo->get_zdc_energy(iside) <= m_zdc_cut  && minbiascheck)
 	{
+    if (Verbosity())
+    {
+      std::cout << PHWHERE << " ZDC cut failed: zdc energy = " << m_zdcinfo->get_zdc_energy(iside) << " cut = " << m_zdc_cut << std::endl;
+    }
 	  minbiascheck = false;
 	  //m_mb_info->setIsAuAuMinimumBias(false);
 	  //return Fun4AllReturnCodes::EVENT_OK;	 
@@ -186,6 +215,10 @@ int MinimumBiasClassifier::FillMinimumBiasInfo()
     }
   if ((m_mbd_charge_sum[0] + m_mbd_charge_sum[1]) > 2100  && minbiascheck)
     {
+      if (Verbosity())
+      {
+        std::cout << PHWHERE << " MBD charge sum cut failed" << std::endl;
+      }
       minbiascheck = false;
       //m_mb_info->setIsAuAuMinimumBias(false);
       //return Fun4AllReturnCodes::EVENT_OK;	 
