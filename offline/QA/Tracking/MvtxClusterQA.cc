@@ -99,6 +99,8 @@ int MvtxClusterQA::process_event(PHCompositeNode *topNode)
     }
   }
 
+  std::map<int, int> nclusperlayer;
+
   for (auto &hsk : clusterContainer->getHitSetKeys(TrkrDefs::TrkrId::mvtxId))
   {
     int numclusters_chip = 0;
@@ -124,16 +126,19 @@ int MvtxClusterQA::process_event(PHCompositeNode *topNode)
         {
           h_clusPhi_l0->Fill(phi);
           h_clusZ_clusPhi_l0->Fill(globalpos(2), phi);
+          nclusperlayer[0]++;
         }
         else if (clayer == 1)
         {
           h_clusPhi_l1->Fill(phi);
           h_clusZ_clusPhi_l1->Fill(globalpos(2), phi);
+          nclusperlayer[1]++;
         }
         else if (clayer == 2)
         {
           h_clusPhi_l2->Fill(phi);
           h_clusZ_clusPhi_l2->Fill(globalpos(2), phi);
+          nclusperlayer[2]++;
         }
         m_totalClusters++;
         numclusters_chip++;
@@ -157,20 +162,27 @@ int MvtxClusterQA::process_event(PHCompositeNode *topNode)
         {
           h_clusPhi_l0->Fill(phi);
           h_clusZ_clusPhi_l0->Fill(globalpos(2), phi);
+          nclusperlayer[0]++;
         }
         else if (clayer == 1)
         {
           h_clusPhi_l1->Fill(phi);
           h_clusZ_clusPhi_l1->Fill(globalpos(2), phi);
+          nclusperlayer[1]++;
         }
         else if (clayer == 2)
         {
           h_clusPhi_l2->Fill(phi);
           h_clusZ_clusPhi_l2->Fill(globalpos(2), phi);
+          nclusperlayer[2]++;
         }
       }
     }
   }
+
+  h_Nclusl0_Nclusl1->Fill(nclusperlayer[0],nclusperlayer[1]);
+  h_Nclusl0_Nclusl2->Fill(nclusperlayer[0],nclusperlayer[2]);
+  h_Nclusl1_Nclusl2->Fill(nclusperlayer[1],nclusperlayer[2]);
 
   TrkrHitSetContainer::ConstRange hitsetrange = trkrHitSetContainer->getHitSets(TrkrDefs::TrkrId::mvtxId);
 
@@ -210,7 +222,7 @@ void MvtxClusterQA::createHistos()
   h_occupancy->GetXaxis()->SetTitle("Chip Occupancy [%]");
   h_occupancy->GetYaxis()->SetTitle("Entries");
   hm->registerHisto(h_occupancy);
-  h_clusSize = new TH1F((boost::format("%sclusterSize") % getHistoPrefix()).str().c_str(), "MVTX Cluster Size", 50, -0.5, 49.5);
+  h_clusSize = new TH1F((boost::format("%sclusterSize") % getHistoPrefix()).str().c_str(), "MVTX Cluster Size", 131,-0.5,130.5);
   h_clusSize->GetXaxis()->SetTitle("Cluster Size");
   h_clusSize->GetYaxis()->SetTitle("Entries");
   hm->registerHisto(h_clusSize);
@@ -246,10 +258,23 @@ void MvtxClusterQA::createHistos()
   h_strobe->GetXaxis()->SetTitle("Strobe BCO - GL1 BCO");
   h_strobe->GetYaxis()->SetTitle("Entries");
   hm->registerHisto(h_strobe);
-  h_clusSize_nClus = new TH2F((boost::format("%sclusSize_nCLus") % getHistoPrefix()).str().c_str(),"MVTX Cluster Size vs Number of Clusters",800,-0.5,799.5,25,-0.5,24.5);
+  h_clusSize_nClus = new TH2F((boost::format("%sclusSize_nCLus") % getHistoPrefix()).str().c_str(),"MVTX Cluster Size vs Number of Clusters",800,-0.5,799.5,131,-0.5,130.5);
   h_clusSize_nClus->GetXaxis()->SetTitle("Number of Clusters");
   h_clusSize_nClus->GetYaxis()->SetTitle("Cluster Size");
   hm->registerHisto(h_clusSize_nClus);
+
+  h_Nclusl0_Nclusl1 = new TH2F((boost::format("%sNclusl0_Nclusl1") % getHistoPrefix()).str().c_str(),"MVTX Number of Clusters Layer 0 vs Layer 1",400, 0, 8000, 400, 0, 8000);
+  h_Nclusl0_Nclusl1->GetXaxis()->SetTitle("Number of Clusters Layer 0");
+  h_Nclusl0_Nclusl1->GetYaxis()->SetTitle("Number of Clusters Layer 1");
+  hm->registerHisto(h_Nclusl0_Nclusl1);
+  h_Nclusl0_Nclusl2 = new TH2F((boost::format("%sNclusl0_Nclusl2") % getHistoPrefix()).str().c_str(),"MVTX Number of Clusters Layer 0 vs Layer 2",400, 0, 8000, 400, 0, 8000);
+  h_Nclusl0_Nclusl2->GetXaxis()->SetTitle("Number of Clusters Layer 0");
+  h_Nclusl0_Nclusl2->GetYaxis()->SetTitle("Number of Clusters Layer 2");
+  hm->registerHisto(h_Nclusl0_Nclusl2);
+  h_Nclusl1_Nclusl2 = new TH2F((boost::format("%sNclusl1_Nclusl2") % getHistoPrefix()).str().c_str(),"MVTX Number of Clusters Layer 1 vs Layer 2",400, 0, 8000, 400, 0, 8000);
+  h_Nclusl1_Nclusl2->GetXaxis()->SetTitle("Number of Clusters Layer 1");
+  h_Nclusl1_Nclusl2->GetYaxis()->SetTitle("Number of Clusters Layer 2");
+  hm->registerHisto(h_Nclusl1_Nclusl2);
 
   if (m_chipInfo)
   {

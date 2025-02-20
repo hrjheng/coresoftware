@@ -52,6 +52,9 @@ class MvtxClusterQA : public SubsysReco
   TH2 *h_clusZ_clusPhi_l2{nullptr};
   TH1 *h_strobe{nullptr};
   TH2 *h_clusperchip[3][20][9] = {{{nullptr}}};
+  TH2 *h_Nclusl0_Nclusl1{nullptr};
+  TH2 *h_Nclusl0_Nclusl2{nullptr};
+  TH2 *h_Nclusl1_Nclusl2{nullptr};
 };
 
 #endif  // QA_TRACKING_MVTXCLUSTERQA_H

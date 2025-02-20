@@ -76,6 +76,7 @@ class InttClusterQA : public SubsysReco
   TH2 *h_clusZ_clusPhi_l34{nullptr};
   TH2 *h_clusZ_clusPhi_l56{nullptr};
   TH2 *h_cluspersensor[4][16][4] = {{{nullptr}}};
+  TH2 *h_NInnerClus_NOuterClus{nullptr};
 };
 
 #endif  // InttClusterQA_H

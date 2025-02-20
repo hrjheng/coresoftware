@@ -77,6 +77,8 @@ int InttClusterQA::process_event(PHCompositeNode *topNode)
     return Fun4AllReturnCodes::ABORTEVENT;
   }
 
+  int ninnerclus = 0, nouterclus = 0;
+
   for (auto &hsk : clusterContainer->getHitSetKeys(TrkrDefs::TrkrId::inttId))
   {
     int numclusters = 0;
@@ -100,11 +102,13 @@ int InttClusterQA::process_event(PHCompositeNode *topNode)
         {
           h_clusPhi_l34->Fill(phi);
           h_clusZ_clusPhi_l34->Fill(globalpos(2), phi);
+          ninnerclus++;
         }
         else if (clayer == 5 || clayer == 6)
         {
           h_clusPhi_l56->Fill(phi);
           h_clusZ_clusPhi_l56->Fill(globalpos(2), phi);
+          nouterclus++;
         }
 
         m_totalClusters++;
@@ -127,15 +131,19 @@ int InttClusterQA::process_event(PHCompositeNode *topNode)
         {
           h_clusPhi_l34->Fill(phi);
           h_clusZ_clusPhi_l34->Fill(globalpos(2), phi);
+          ninnerclus++;
         }
         else if (clayer == 5 || clayer == 6)
         {
           h_clusPhi_l56->Fill(phi);
           h_clusZ_clusPhi_l56->Fill(globalpos(2), phi);
+          nouterclus++;
         }
       }
     }
   }
+
+  h_NInnerClus_NOuterClus->Fill(ninnerclus, nouterclus);
 
   TrkrHitSetContainer::ConstRange hitsetrange = trkrHitSetContainer->getHitSets(TrkrDefs::TrkrId::inttId);
 
@@ -169,7 +177,7 @@ void InttClusterQA::createHistos()
   h_occupancy->GetXaxis()->SetTitle("Sensor Occupancy [%]");
   h_occupancy->GetYaxis()->SetTitle("Entries");
   hm->registerHisto(h_occupancy);
-  h_clusSize = new TH1F((boost::format("%sclusterSize") % getHistoPrefix()).str().c_str(), "INTT Cluster Size", 20, -0.5, 19.5);
+  h_clusSize = new TH1F((boost::format("%sclusterSize") % getHistoPrefix()).str().c_str(), "INTT Cluster Size", 131, -0.5, 130.5);
   h_clusSize->GetXaxis()->SetTitle("Cluster Size");
   h_clusSize->GetYaxis()->SetTitle("Entries");
   hm->registerHisto(h_clusSize);
@@ -212,6 +220,11 @@ void InttClusterQA::createHistos()
       }
     }
   }
+
+  h_NInnerClus_NOuterClus = new TH2F((boost::format("%sNInnerClus_NOuterClus") % getHistoPrefix()).str().c_str(), "INTT NInnerClus vs NOuterClus", 400, 0, 8000, 400, 0, 8000);
+  h_NInnerClus_NOuterClus->GetXaxis()->SetTitle("Number of inner clusters");
+  h_NInnerClus_NOuterClus->GetYaxis()->SetTitle("Number of outer clusters");
+  hm->registerHisto(h_NInnerClus_NOuterClus);
 
   return;
 }
