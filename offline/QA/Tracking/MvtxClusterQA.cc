@@ -120,6 +120,9 @@ int MvtxClusterQA::process_event(PHCompositeNode *topNode)
         auto clayer = TrkrDefs::getLayer(cluskey);
         h_clusperchip[(int) layer][(int) stave][(int) chip]->Fill(cluster->getLocalY(), cluster->getLocalX());
         h_clusSize->Fill(cluster->getSize());
+        h_clusPhiSize->Fill(cluster->getPhiSize());
+        h_clusZSize->Fill(cluster->getZSize());
+        h_clusPhiSize_clusZSize->Fill(cluster->getPhiSize(), cluster->getZSize());
         h_clusSize_nClus->Fill(numclusters,cluster->getSize());
         h_clusPhi_incl->Fill(phi);
         if (clayer == 0)
@@ -156,6 +159,9 @@ int MvtxClusterQA::process_event(PHCompositeNode *topNode)
         auto phi = atan2(globalpos(1), globalpos(0));
         auto clayer = TrkrDefs::getLayer(cluskey);
         h_clusSize->Fill(cluster->getSize());
+        h_clusPhiSize->Fill(cluster->getPhiSize());
+        h_clusZSize->Fill(cluster->getZSize());
+        h_clusPhiSize_clusZSize->Fill(cluster->getPhiSize(), cluster->getZSize());
         h_clusSize_nClus->Fill(numclusters,cluster->getSize());
         h_clusPhi_incl->Fill(phi);
         if (clayer == 0)
@@ -226,6 +232,18 @@ void MvtxClusterQA::createHistos()
   h_clusSize->GetXaxis()->SetTitle("Cluster Size");
   h_clusSize->GetYaxis()->SetTitle("Entries");
   hm->registerHisto(h_clusSize);
+  h_clusPhiSize = new TH1F((boost::format("%sclusterPhiSize") % getHistoPrefix()).str().c_str(), "MVTX Cluster #phi-size", 131,-0.5,130.5);
+  h_clusPhiSize->GetXaxis()->SetTitle("Cluster #phi size");
+  h_clusPhiSize->GetYaxis()->SetTitle("Entries");
+  hm->registerHisto(h_clusPhiSize);
+  h_clusZSize = new TH1F((boost::format("%sclusterZSize") % getHistoPrefix()).str().c_str(), "MVTX Cluster Z-size", 131,-0.5,130.5);
+  h_clusZSize->GetXaxis()->SetTitle("Cluster Z size");
+  h_clusZSize->GetYaxis()->SetTitle("Entries");
+  hm->registerHisto(h_clusZSize);
+  h_clusPhiSize_clusZSize = new TH2F((boost::format("%sclusterPhiSize_clusZSize") % getHistoPrefix()).str().c_str(), "MVTX Cluster #phi-size vs Z-size", 131,-0.5,130.5,131,-0.5,130.5);
+  h_clusPhiSize_clusZSize->GetXaxis()->SetTitle("Cluster #phi size");
+  h_clusPhiSize_clusZSize->GetYaxis()->SetTitle("Cluster Z size");
+  hm->registerHisto(h_clusPhiSize_clusZSize);
   h_clusPhi_incl = new TH1F((boost::format("%sclusterPhi_incl") % getHistoPrefix()).str().c_str(), "MVTX Cluster Phi", 320, -3.2, 3.2);
   h_clusPhi_incl->GetXaxis()->SetTitle("Cluster (layer 0+1+2) #phi [rad]");
   h_clusPhi_incl->GetYaxis()->SetTitle("Entries");
