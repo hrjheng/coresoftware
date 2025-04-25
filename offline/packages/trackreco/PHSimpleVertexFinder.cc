@@ -987,88 +987,10 @@ class UnionFind
   std::vector<size_t> parent;
 };
 
-/*
 std::vector<std::set<unsigned int>> PHSimpleVertexFinder::findConnectedTracks()
 {
-  std::vector<std::set<unsigned int>> connected_tracks;
-  std::set<unsigned int> connected;
-  std::set<unsigned int> used;
-  for (auto it : _track_pair_map)
-  {
-    unsigned int id1 = it.first;
-    unsigned int id2 = it.second.first;
-
-    if ((used.find(id1) != used.end()) && (used.find(id2) != used.end()))
-    {
-      if (Verbosity() > 3)
-      {
-        std::cout << " tracks " << id1 << " and " << id2 << " are both in used , skip them" << std::endl;
-      }
-      continue;
-    }
-    else if ((used.find(id1) == used.end()) && (used.find(id2) == used.end()))
-    {
-      if (Verbosity() > 3)
-      {
-        std::cout << " tracks " << id1 << " and " << id2 << " are both not in used , start a new connected set" << std::endl;
-      }
-      // close out and start a new connections set
-      if (connected.size() > 0)
-      {
-        connected_tracks.push_back(connected);
-        connected.clear();
-        if (Verbosity() > 3)
-        {
-          std::cout << "           closing out set " << std::endl;
-        }
-      }
-    }
-
-    // get everything connected to id1 and id2
-    connected.insert(id1);
-    used.insert(id1);
-    connected.insert(id2);
-    used.insert(id2);
-    for (auto cit : _track_pair_map)
-    {
-      unsigned int id3 = cit.first;
-      unsigned int id4 = cit.second.first;
-      if ((connected.find(id3) != connected.end()) || (connected.find(id4) != connected.end()))
-      {
-        if (Verbosity() > 3)
-        {
-          std::cout << " found connection to " << id3 << " and " << id4 << std::endl;
-        }
-        connected.insert(id3);
-        used.insert(id3);
-        connected.insert(id4);
-        used.insert(id4);
-      }
-    }
-  }
-
-  // close out the last set
-  if (connected.size() > 0)
-  {
-    connected_tracks.push_back(connected);
-    connected.clear();
-    if (Verbosity() > 3)
-    {
-      std::cout << "           closing out last set " << std::endl;
-    }
-  }
-
-  if (Verbosity() > 3)
-  {
-    std::cout << "connected_tracks size " << connected_tracks.size() << std::endl;
-  }
-
-  return connected_tracks;
-}
-*/
-
-std::vector<std::set<unsigned int>> PHSimpleVertexFinder::findConnectedTracks()
-{
+  std::cout << __PRETTY_FUNCTION__ << "--" << __LINE__ << "-- find connected tracks using the Union-Find algorithm --" << std::endl;
+  
   std::vector<std::set<unsigned int>> connected_tracks;
 
   if (_track_pair_map.empty()) return connected_tracks;
@@ -1097,12 +1019,14 @@ std::vector<std::set<unsigned int>> PHSimpleVertexFinder::findConnectedTracks()
 
   UnionFind uf(index);
 
+  // use _track_pair_map to union the tracks that have small mutual DCA
   for (auto &[id1, pair] : _track_pair_map)
   {
     unsigned int id2 = pair.first;
     uf.unite(track_to_index[id1], track_to_index[id2]);
   }
 
+  // now group the tracks by their root index
   std::unordered_map<size_t, std::set<unsigned int>> groups;
   for (const auto &[track_id, idx] : track_to_index)
   {
