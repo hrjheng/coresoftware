@@ -218,6 +218,10 @@ class PHActsSiliconSeeding : public SubsysReco
   std::vector<float> m_mvtxgy = {};
   std::vector<float> m_mvtxgz = {};
   std::vector<float> m_mvtxgr = {};
+  std::vector<float> m_mvtxgphi = {};
+  std::vector<std::vector<float>> m_mvtx_sp_x = {};
+  std::vector<std::vector<float>> m_mvtx_sp_y = {};
+  std::vector<std::vector<float>> m_mvtx_sp_z = {};
   float m_projgx = std::numeric_limits<float>::quiet_NaN();
   float m_projgy = std::numeric_limits<float>::quiet_NaN();
   float m_projgz = std::numeric_limits<float>::quiet_NaN();
@@ -338,6 +342,8 @@ class PHActsSiliconSeeding : public SubsysReco
  TH2 *h_projHits = nullptr;
  TH2 *h_zprojHits = nullptr;
  TH2 *h_resids = nullptr;
+ // histogram for space point
+ TH1 *h_mvtxgphi = nullptr;
 };
 
 #endif
