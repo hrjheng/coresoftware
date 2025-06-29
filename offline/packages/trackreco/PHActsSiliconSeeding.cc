@@ -332,7 +332,7 @@ void PHActsSiliconSeeding::makeSvtxTracks(const GridSeeds& seedVector)
           m_mvtxgy.push_back(globalPosition(1));
 	        m_mvtxgz.push_back(globalPosition(2));
           m_mvtxgphi.push_back(atan2(globalPosition(1), globalPosition(0)));
-          h_mvtxgphi->Fill(atan2(globalPosition(1), globalPosition(0)));
+          h_mvtxgphi_sp->Fill(atan2(globalPosition(1), globalPosition(0)));
         }
         positions.insert(std::make_pair(cluskey, globalPosition));
         if (Verbosity() > 1)
@@ -975,6 +975,12 @@ std::vector<const SpacePoint*> PHActsSiliconSeeding::getSiliconSpacePoints(Acts:
           continue;
         }
 
+        if (m_seedAnalysis)
+        {
+          auto globalPos_beforesp = m_tGeometry->getGlobalPosition(cluskey, cluster);
+          h_mvtxgphi_beforesp->Fill(atan2(globalPos_beforesp(1), globalPos_beforesp(0)));
+        }
+
         auto sp = makeSpacePoint(surface, cluskey, cluster).release();
         spVec.push_back(sp);
         rRangeSPExtent.extend({sp->x(), sp->y(), sp->z()});
@@ -1165,7 +1171,8 @@ void PHActsSiliconSeeding::writeHistograms()
   h_projHits->Write();
   h_zprojHits->Write();
   h_resids->Write();
-  h_mvtxgphi->Write();
+  h_mvtxgphi_beforesp->Write();
+  h_mvtxgphi_sp->Write();
   m_file->Write();
   m_file->Close();
 }
@@ -1239,7 +1246,8 @@ void PHActsSiliconSeeding::createHistograms()
                       100, -1, 1, 100, -1, 1);
 
   // histogram for space point
-  h_mvtxgphi = new TH1F("mvtxgphi", ";MVTX global phi [rad]", 128, -3.2, 3.2);
+  h_mvtxgphi_beforesp = new TH1F("h_mvtxgphi_beforesp", ";MVTX global #phi (before space point) [rad]", 128, -3.2, 3.2);
+  h_mvtxgphi_sp = new TH1F("h_mvtxgphi_sp", ";MVTX global #phi (space point) [rad]", 128, -3.2, 3.2);
 }
 
 double PHActsSiliconSeeding::normPhi2Pi(const double phi)
