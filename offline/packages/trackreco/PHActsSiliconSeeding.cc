@@ -984,6 +984,10 @@ std::vector<const SpacePoint*> PHActsSiliconSeeding::getSiliconSpacePoints(Acts:
         auto sp = makeSpacePoint(surface, cluskey, cluster).release();
         spVec.push_back(sp);
         rRangeSPExtent.extend({sp->x(), sp->y(), sp->z()});
+        if (m_seedAnalysis)
+        {
+          h_mvtxgphi_insp->Fill(atan2(sp->y(), sp->x())); // this is with the "unshift"
+        }
         numSiliconHits++;
       }
     }
@@ -1172,6 +1176,7 @@ void PHActsSiliconSeeding::writeHistograms()
   h_zprojHits->Write();
   h_resids->Write();
   h_mvtxgphi_beforesp->Write();
+  h_mvtxgphi_insp->Write();
   h_mvtxgphi_sp->Write();
   m_file->Write();
   m_file->Close();
@@ -1247,6 +1252,7 @@ void PHActsSiliconSeeding::createHistograms()
 
   // histogram for space point
   h_mvtxgphi_beforesp = new TH1F("h_mvtxgphi_beforesp", ";MVTX global #phi (before space point) [rad]", 128, -3.2, 3.2);
+  h_mvtxgphi_insp = new TH1F("h_mvtxgphi_insp", ";MVTX global #phi (in space point) [rad]", 128, -3.2, 3.2);
   h_mvtxgphi_sp = new TH1F("h_mvtxgphi_sp", ";MVTX global #phi (space point) [rad]", 128, -3.2, 3.2);
 }
 

@@ -261,6 +261,7 @@ class PHActsSiliconSeeding : public SubsysReco
     TH2 *h_resids = nullptr;
     // histogram for space point
     TH1 *h_mvtxgphi_beforesp = nullptr;
+    TH1 *h_mvtxgphi_insp = nullptr;
     TH1 *h_mvtxgphi_sp = nullptr;
 };
 
