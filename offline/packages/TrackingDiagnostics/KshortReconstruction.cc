@@ -33,6 +33,7 @@
 #include <TNtuple.h>
 #include <TSystem.h>
 
+#include <memory>
 #include <cmath>
 #include <utility>
 
@@ -103,7 +104,7 @@ std::tuple<float, float, float> corrMap::getCorrections(const float &pt, const f
         acccorr = accneg3D->GetBinContent(bin);
     }
 
-    if (acccorr > 0.2)
+    if (acccorr > 0.) //! Christof set > 0.2 (why?)
     {
         return std::make_tuple(scalecorr, ringcorr, etacorr);
     }
@@ -159,7 +160,7 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
 
         double corrected_pt1 = (tr1->get_charge() > 0) ? tr1->get_pt() * ringcorr_tr1 * etacorr_tr1 : tr1->get_pt() * scalecorr_tr1 * ringcorr_tr1 * etacorr_tr1;
         // create an svtxtrack with corrected pt
-        SvtxTrack *corrected_tr1 = dynamic_cast<SvtxTrack *>(tr1->CloneMe());
+        std::unique_ptr<SvtxTrack> corrected_tr1(dynamic_cast<SvtxTrack *>(tr1->CloneMe()));
         if (!corrected_tr1)
         {
             if (Verbosity() > 0)
@@ -202,7 +203,7 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
             }
         }
 
-        std::vector<unsigned int> nstates1 = getTrackStates(corrected_tr1);
+        std::vector<unsigned int> nstates1 = getTrackStates(corrected_tr1.get());
         unsigned int track1_mvtx_state_size = nstates1[0];
         unsigned int track1_intt_state_size = nstates1[1];
         // unsigned int track1_tpc_state_size = nstates1[2];
@@ -237,7 +238,7 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
 
         Acts::Vector3 pos1(corrected_tr1->get_x(), corrected_tr1->get_y(), corrected_tr1->get_z());
         Acts::Vector3 mom1(corrected_tr1->get_px(), corrected_tr1->get_py(), corrected_tr1->get_pz());
-        Acts::Vector3 dcaVals1 = calculateDca(corrected_tr1, mom1, pos1);
+        Acts::Vector3 dcaVals1 = calculateDca(corrected_tr1.get(), mom1, pos1);
         // first dca cuts
         if (fabs(dcaVals1(0)) < this_dca_cut || fabs(dcaVals1(1)) < this_dca_cut)
         {
@@ -274,7 +275,7 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
             }
             double corrected_pt2 = (tr2->get_charge() > 0) ? tr2->get_pt() * ringcorr_tr2 * etacorr_tr2 : tr2->get_pt() * scalecorr_tr2 * ringcorr_tr2 * etacorr_tr2;
             // create an svtxtrack with corrected pt
-            SvtxTrack *corrected_tr2 = dynamic_cast<SvtxTrack *>(tr2->CloneMe());
+            std::unique_ptr<SvtxTrack> corrected_tr2(dynamic_cast<SvtxTrack *>(tr2->CloneMe()));
             if (!corrected_tr2)
             {
                 if (Verbosity() > 0)
@@ -319,7 +320,7 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
                 }
             }
 
-            std::vector<unsigned int> nstates2 = getTrackStates(corrected_tr2);
+            std::vector<unsigned int> nstates2 = getTrackStates(corrected_tr2.get());
             unsigned int track2_mvtx_state_size = nstates2[0];
             unsigned int track2_intt_state_size = nstates2[1];
             // unsigned int track2_tpc_state_size = nstates2[2];
@@ -355,7 +356,7 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
             // dca xy and dca z cut here compare to track dca cut
             Acts::Vector3 pos2(corrected_tr2->get_x(), corrected_tr2->get_y(), corrected_tr2->get_z());
             Acts::Vector3 mom2(corrected_tr2->get_px(), corrected_tr2->get_py(), corrected_tr2->get_pz());
-            Acts::Vector3 dcaVals2 = calculateDca(corrected_tr2, mom2, pos2);
+            Acts::Vector3 dcaVals2 = calculateDca(corrected_tr2.get(), mom2, pos2);
 
             if (fabs(dcaVals2(0)) < this_dca_cut2 || fabs(dcaVals2(1)) < this_dca_cut2)
             {
@@ -372,9 +373,16 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
                 std::cout << "Check DCA for tracks " << id1 << " and " << id2 << std::endl;
             }
 
-            if (corrected_tr1->get_charge() == corrected_tr2->get_charge())
+            if (pair_charge_sign != 0)
             {
-                // continue;
+                if ((pair_charge_sign < 0) && (corrected_tr1->get_charge() * corrected_tr2->get_charge()) > 0) // opposite sign selection
+                {
+                    continue;
+                }
+                else if ((pair_charge_sign > 0) && (corrected_tr1->get_charge() * corrected_tr2->get_charge()) < 0) // same sign selection
+                {
+                    continue;
+                }
             }
 
             // declare these variables to pass into findPCAtwoTracks and fillHistogram by reference
@@ -407,8 +415,8 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
                 Eigen::Vector3d projected_pos2;
                 Eigen::Vector3d projected_mom2;
 
-                bool ret1 = projectTrackToPoint(corrected_tr1, pca_rel1, projected_pos1, projected_mom1);
-                bool ret2 = projectTrackToPoint(corrected_tr2, pca_rel2, projected_pos2, projected_mom2);
+                bool ret1 = projectTrackToPoint(corrected_tr1.get(), pca_rel1, projected_pos1, projected_mom1);
+                bool ret2 = projectTrackToPoint(corrected_tr2.get(), pca_rel2, projected_pos2, projected_mom2);
 
                 if (!ret1 || !ret2)
                 {
@@ -429,7 +437,7 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
 
                 // invariant mass is calculated in this method
                 fillHistogram(projected_mom1, projected_mom2, recomass, invariantMass, invariantPt, invariantPhi, rapidity, pseudorapidity);
-                fillNtp(corrected_tr1, corrected_tr2, dcaVals1, dcaVals2, pca_rel1, pca_rel2, pair_dca, invariantMass, invariantPt, invariantPhi, rapidity, pseudorapidity, projected_pos1, projected_pos2, projected_mom1, projected_mom2, pca_rel1_proj, pca_rel2_proj, pair_dca_proj, track1_silicon_cluster_size, track2_silicon_cluster_size, track1_mvtx_cluster_size, track1_mvtx_state_size,
+                fillNtp(corrected_tr1.get(), corrected_tr2.get(), dcaVals1, dcaVals2, pca_rel1, pca_rel2, pair_dca, invariantMass, invariantPt, invariantPhi, rapidity, pseudorapidity, projected_pos1, projected_pos2, projected_mom1, projected_mom2, pca_rel1_proj, pca_rel2_proj, pair_dca_proj, track1_silicon_cluster_size, track2_silicon_cluster_size, track1_mvtx_cluster_size, track1_mvtx_state_size,
                         track1_intt_cluster_size, track1_intt_state_size, track2_mvtx_cluster_size, track2_mvtx_state_size, track2_intt_cluster_size, track2_intt_state_size, m_runNumber, m_evtNumber);
 
                 if (Verbosity() > 1)
@@ -453,8 +461,17 @@ int KshortReconstruction::process_event(PHCompositeNode *topNode)
                 if (m_save_tracks)
                 {
                     m_output_trackMap = findNode::getClass<SvtxTrackMap>(topNode, m_output_trackMap_node_name);
-                    m_output_trackMap->insertWithKey(corrected_tr1, corrected_tr1->get_id());
-                    m_output_trackMap->insertWithKey(corrected_tr2, corrected_tr2->get_id());
+                    if (m_output_trackMap)
+                    {
+                        auto *raw_tr1 = corrected_tr1.release();
+                        auto *raw_tr2 = corrected_tr2.release();
+                        m_output_trackMap->insertWithKey(raw_tr1, raw_tr1->get_id());
+                        m_output_trackMap->insertWithKey(raw_tr2, raw_tr2->get_id());
+                    }
+                    else if (Verbosity() > 0)
+                    {
+                        std::cout << "Output track map " << m_output_trackMap_node_name << " not found; skipping save" << std::endl;
+                    }
                 }
             }
         }

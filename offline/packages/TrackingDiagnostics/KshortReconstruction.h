@@ -54,6 +54,23 @@ class KshortReconstruction : public SubsysReco
     void set_output_file(const std::string &outputfile) { filepath = outputfile; }
     void save_tracks(bool save = true) { m_save_tracks = save; }
 
+    // set charge sign selection ()
+    void setChargeSignSelection(std::string sign = "opposite")
+    {
+        if (sign == "opposite")
+        {
+            pair_charge_sign = -1;
+        }
+        else if (sign == "same")
+        {
+            pair_charge_sign = 1;
+        }
+        else
+        {
+            pair_charge_sign = 0;
+        }
+    }
+
     // Christof's track-pt correction
     void setCorrectionFiles(const std::string &accposneg3D = "/phenix/u/bogui/data/PtCorr/acc_qinv_hist.root",
                             const std::string &ptcorr2D = "/phenix/u/bogui/data/PtCorr/scale_corr_fullchi2_accqinv.root", //
@@ -100,6 +117,7 @@ class KshortReconstruction : public SubsysReco
     double track_dca_cut{0.01};
     double invariant_pt_cut{0.1};
     double track_pt_cut{0.2};
+    int pair_charge_sign{-1}; // 0: same- + opposite-sign, 1: same-sign, -1: opposite-sign
     TFile *fout{nullptr};
     TH1 *recomass{nullptr};
 
