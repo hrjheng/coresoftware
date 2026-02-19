@@ -17,17 +17,33 @@
 
 // MvtxPixelMask class
 //==============================================================================
-void MvtxPixelMask::load_from_CDB()
+void MvtxPixelMask::load_from_CDB(std::string mapname)
 {
-  if (!m_hot_pixel_map.empty())
+  if (!m_pixel_map.empty())
   {
     clear();
   }
 
-  // Load the hot pixel file from the CDB
-  std::string database = CDBInterface::instance()->getUrl("MVTX_HotPixelMap");  // This is specifically for MVTX Hot Pixels
+  std::string totpxlname;
+  if (mapname == "MVTX_HotPixelMap")
+  {
+    totpxlname = "TotalHotPixels";
+  }
+  else if (mapname == "MVTX_DeadPixelMap")
+  {
+    totpxlname = "TotalDeadPixels";
+  }
+  else
+  {
+    std::cout << "[WARNING] MvtxPixelMask::load_from_CDB - Error: invalid map name: " << mapname << ". Set to hot pixel map by default." << std::endl;
+    mapname = "MVTX_HotPixelMap";
+    totpxlname = "TotalHotPixels";
+  }
+
+  // Load the pixel mask file from the CDB
+  std::string database = CDBInterface::instance()->getUrl(mapname);  // "MVTX_HotPixelMap" or "MVTX_DeadPixelMap"
   CDBTTree* cdbttree = new CDBTTree(database);
-  int n_total_masked = cdbttree->GetSingleIntValue("TotalHotPixels");
+  int n_total_masked = cdbttree->GetSingleIntValue(totpxlname.c_str());
 
   // Load the hot pixel map
   std::set<MvtxPixelDefs::pixelkey> masked_pixels{};
@@ -44,10 +60,10 @@ void MvtxPixelMask::load_from_CDB()
   }
 
   // Copy the masked pixels to the hot pixel map
-  // m_hot_pixel_map.assign(masked_pixels.begin(), masked_pixels.end());
+  // m_pixel_map.assign(masked_pixels.begin(), masked_pixels.end());
   for (unsigned long masked_pixel : masked_pixels)
   {
-    m_hot_pixel_map.push_back(masked_pixel);
+    m_pixel_map.push_back(masked_pixel);
   }
 
   return;
@@ -55,9 +71,9 @@ void MvtxPixelMask::load_from_CDB()
 
 void MvtxPixelMask::add_pixel(MvtxPixelDefs::pixelkey key)
 {
-  if (std::find(m_hot_pixel_map.begin(), m_hot_pixel_map.end(), key) == m_hot_pixel_map.end())
+  if (std::find(m_pixel_map.begin(), m_pixel_map.end(), key) == m_pixel_map.end())
   {
-    m_hot_pixel_map.push_back(key);
+    m_pixel_map.push_back(key);
   }
 
   return;
@@ -65,10 +81,10 @@ void MvtxPixelMask::add_pixel(MvtxPixelDefs::pixelkey key)
 
 void MvtxPixelMask::remove_pixel(MvtxPixelDefs::pixelkey key)
 {
-  auto it = std::find(m_hot_pixel_map.begin(), m_hot_pixel_map.end(), key);
-  if (it != m_hot_pixel_map.end())
+  auto it = std::find(m_pixel_map.begin(), m_pixel_map.end(), key);
+  if (it != m_pixel_map.end())
   {
-    m_hot_pixel_map.erase(it);
+    m_pixel_map.erase(it);
   }
 
   return;
@@ -76,7 +92,7 @@ void MvtxPixelMask::remove_pixel(MvtxPixelDefs::pixelkey key)
 
 void MvtxPixelMask::clear()
 {
-  m_hot_pixel_map.clear();
+  m_pixel_map.clear();
   return;
 }
 
@@ -93,5 +109,5 @@ bool MvtxPixelMask::is_masked(MvtxRawHit* hit) const
   const TrkrDefs::hitsetkey this_pixel_hitsetkey = MvtxDefs::genHitSetKey(layer, stave, chip, 0);
   MvtxPixelDefs::pixelkey this_pixel_key = MvtxPixelDefs::gen_pixelkey(this_pixel_hitsetkey, this_pixel_hitkey);
 
-  return std::find(m_hot_pixel_map.begin(), m_hot_pixel_map.end(), this_pixel_key) != m_hot_pixel_map.end();
+  return std::find(m_pixel_map.begin(), m_pixel_map.end(), this_pixel_key) != m_pixel_map.end();
 }

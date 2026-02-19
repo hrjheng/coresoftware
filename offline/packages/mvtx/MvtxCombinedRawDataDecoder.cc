@@ -13,6 +13,7 @@
 #include <trackbase/TrkrHitSetContMvtxHelperv1.h>
 #include <trackbase/TrkrHitSetContainerv1.h>
 #include <trackbase/TrkrHitv2.h>
+#include <trackbase/TrkrDefs.h>
 
 #include <fun4all/Fun4AllServer.h>
 
@@ -54,8 +55,7 @@ void MvtxCombinedRawDataDecoder::CreateNodes(PHCompositeNode *topNode)
 {
   // get dst node
   PHNodeIterator iter(topNode);
-  PHCompositeNode *dstNode =
-      dynamic_cast<PHCompositeNode *>(iter.findFirst("PHCompositeNode", "DST"));
+  PHCompositeNode *dstNode = dynamic_cast<PHCompositeNode *>(iter.findFirst("PHCompositeNode", "DST"));
   if (!dstNode)
   {
     std::cout << "MvtxCombinedRawDataDecoder::InitRun - DST Node missing, "
@@ -65,13 +65,11 @@ void MvtxCombinedRawDataDecoder::CreateNodes(PHCompositeNode *topNode)
   }
 
   // create mvtx hitset helper container if needed
-  mvtx_hit_set_helper =
-      findNode::getClass<TrkrHitSetContMvtxHelper>(topNode, MvtxHitSetHelperName);
+  mvtx_hit_set_helper = findNode::getClass<TrkrHitSetContMvtxHelper>(topNode, MvtxHitSetHelperName);
   if (!mvtx_hit_set_helper)
   {
     // find or create TRKR node
-    auto *trkrNode = dynamic_cast<PHCompositeNode *>(
-        iter.findFirst("PHCompositeNode", "TRKR"));
+    auto *trkrNode = dynamic_cast<PHCompositeNode *>(iter.findFirst("PHCompositeNode", "TRKR"));
     if (!trkrNode)
     {
       trkrNode = new PHCompositeNode("TRKR");
@@ -80,19 +78,16 @@ void MvtxCombinedRawDataDecoder::CreateNodes(PHCompositeNode *topNode)
 
     // create container and add to the tree
     mvtx_hit_set_helper = new TrkrHitSetContMvtxHelperv1;
-    auto *newNode = new PHIODataNode<PHObject>(mvtx_hit_set_helper, MvtxHitSetHelperName,
-                                               "PHObject");
+    auto *newNode = new PHIODataNode<PHObject>(mvtx_hit_set_helper, MvtxHitSetHelperName, "PHObject");
     trkrNode->addNode(newNode);
   }
 
   // create hitset container if needed
-  hit_set_container =
-      findNode::getClass<TrkrHitSetContainer>(topNode, "TRKR_HITSET");
+  hit_set_container = findNode::getClass<TrkrHitSetContainer>(topNode, "TRKR_HITSET");
   if (!hit_set_container)
   {
     // find or create TRKR node
-    auto *trkrNode = dynamic_cast<PHCompositeNode *>(
-        iter.findFirst("PHCompositeNode", "TRKR"));
+    auto *trkrNode = dynamic_cast<PHCompositeNode *>(iter.findFirst("PHCompositeNode", "TRKR"));
     if (!trkrNode)
     {
       trkrNode = new PHCompositeNode("TRKR");
@@ -101,62 +96,51 @@ void MvtxCombinedRawDataDecoder::CreateNodes(PHCompositeNode *topNode)
 
     // create container and add to the tree
     hit_set_container = new TrkrHitSetContainerv1;
-    auto *newNode = new PHIODataNode<PHObject>(hit_set_container, "TRKR_HITSET",
-                                               "PHObject");
+    auto *newNode = new PHIODataNode<PHObject>(hit_set_container, "TRKR_HITSET", "PHObject");
     trkrNode->addNode(newNode);
   }
 
   // Check if MVTX event header already exists
-  auto *mvtxNode = dynamic_cast<PHCompositeNode *>(
-      iter.findFirst("PHCompositeNode", "MVTX"));
+  auto *mvtxNode = dynamic_cast<PHCompositeNode *>(iter.findFirst("PHCompositeNode", "MVTX"));
   if (!mvtxNode)
   {
     mvtxNode = new PHCompositeNode("MVTX");
     dstNode->addNode(mvtxNode);
   }
 
-  mvtx_event_header =
-      findNode::getClass<MvtxEventInfo>(mvtxNode, "MVTXEVENTHEADER");
+  mvtx_event_header = findNode::getClass<MvtxEventInfo>(mvtxNode, "MVTXEVENTHEADER");
   if (!mvtx_event_header)
   {
     mvtx_event_header = new MvtxEventInfov3();
-    auto *newHeader = new PHIODataNode<PHObject>(
-        mvtx_event_header, "MVTXEVENTHEADER", "PHObject");
+    auto *newHeader = new PHIODataNode<PHObject>(mvtx_event_header, "MVTXEVENTHEADER", "PHObject");
     mvtxNode->addNode(newHeader);
   }
 
-  mvtx_raw_event_header =
-      findNode::getClass<MvtxRawEvtHeader>(topNode, m_MvtxRawEvtHeaderNodeName);
+  mvtx_raw_event_header = findNode::getClass<MvtxRawEvtHeader>(topNode, m_MvtxRawEvtHeaderNodeName);
 
-  mvtx_raw_hit_container =
-      findNode::getClass<MvtxRawHitContainer>(topNode, m_MvtxRawHitNodeName);
+  mvtx_raw_hit_container = findNode::getClass<MvtxRawHitContainer>(topNode, m_MvtxRawHitNodeName);
 }
 
 //_____________________________________________________________________
 void MvtxCombinedRawDataDecoder::GetNodes(PHCompositeNode *topNode)
 {
-  mvtx_raw_event_header =
-      findNode::getClass<MvtxRawEvtHeader>(topNode, m_MvtxRawEvtHeaderNodeName);
+  mvtx_raw_event_header = findNode::getClass<MvtxRawEvtHeader>(topNode, m_MvtxRawEvtHeaderNodeName);
   if (Verbosity() >= 3)
   {
     mvtx_raw_event_header->identify();
   }
 
-  mvtx_raw_hit_container =
-      findNode::getClass<MvtxRawHitContainer>(topNode, m_MvtxRawHitNodeName);
+  mvtx_raw_hit_container = findNode::getClass<MvtxRawHitContainer>(topNode, m_MvtxRawHitNodeName);
   if (Verbosity() >= 3)
   {
     mvtx_raw_hit_container->identify();
   }
 
-  hit_set_container =
-      findNode::getClass<TrkrHitSetContainer>(topNode, "TRKR_HITSET");
+  hit_set_container = findNode::getClass<TrkrHitSetContainer>(topNode, "TRKR_HITSET");
 
-  mvtx_hit_set_helper =
-      findNode::getClass<TrkrHitSetContMvtxHelper>(topNode, MvtxHitSetHelperName);
+  mvtx_hit_set_helper = findNode::getClass<TrkrHitSetContMvtxHelper>(topNode, MvtxHitSetHelperName);
 
-  mvtx_event_header =
-      findNode::getClass<MvtxEventInfo>(topNode, "MVTXEVENTHEADER");
+  mvtx_event_header = findNode::getClass<MvtxEventInfo>(topNode, "MVTXEVENTHEADER");
 
   // Could we just get the first strobe BCO instead of setting this to 0?
   // Possible problem, what if the first BCO isn't the mean, then we'll shift tracker hit sets? Probably not a bad thing but depends on hit stripping
@@ -181,10 +165,7 @@ void MvtxCombinedRawDataDecoder::GetNodes(PHCompositeNode *topNode)
 }
 
 //_____________________________________________________________________
-int MvtxCombinedRawDataDecoder::Init(PHCompositeNode * /*topNode*/)
-{
-  return Fun4AllReturnCodes::EVENT_OK;
-}
+int MvtxCombinedRawDataDecoder::Init(PHCompositeNode * /*topNode*/) { return Fun4AllReturnCodes::EVENT_OK; }
 
 //____________________________________________________________________________..
 int MvtxCombinedRawDataDecoder::InitRun(PHCompositeNode *topNode)
@@ -194,14 +175,12 @@ int MvtxCombinedRawDataDecoder::InitRun(PHCompositeNode *topNode)
   if (!mvtx_raw_event_header || !mvtx_raw_hit_container)
   {
     Fun4AllServer::instance()->unregisterSubsystem(this);
-    std::cout << PHWHERE << "::" << __func__ << ": Could not get \""
-              << m_MvtxRawHitNodeName << " or " << m_MvtxRawEvtHeaderNodeName << "\" from Node Tree" << std::endl;
+    std::cout << PHWHERE << "::" << __func__ << ": Could not get \"" << m_MvtxRawHitNodeName << " or " << m_MvtxRawEvtHeaderNodeName << "\" from Node Tree" << std::endl;
     std::cout << "Unregistering subsystem and continuing on" << std::endl;
-
   }
   if (dynamic_cast<MvtxRawEvtHeaderv1 *>(mvtx_raw_event_header))
   {
-    std::cout << PHWHERE <<  "MvtxCombinedRawDataDecoder::GetNodes() !!!WARNING!!! using obsolete MvtxRawEvtHeaderv1.";
+    std::cout << PHWHERE << "MvtxCombinedRawDataDecoder::GetNodes() !!!WARNING!!! using obsolete MvtxRawEvtHeaderv1.";
     std::cout << " Unregistering MvtxCombinedRawDataDecoder SubsysReco." << std::endl;
     Fun4AllServer::instance()->unregisterSubsystem(this);
   }
@@ -226,16 +205,62 @@ int MvtxCombinedRawDataDecoder::InitRun(PHCompositeNode *topNode)
   rc->set_FloatFlag("MvtxStrobeWidth", m_strobeWidth);
 
   // Load the hot pixel map from the CDB
-  if (m_doOfflineMasking)
+  // (Note: this is for additional noisy pixel masks beyond what's already applied when data were taken)
+  if (m_doOfflineMasking && !m_restoreMaskedPixels)
   {
     m_hot_pixel_mask = new MvtxPixelMask();
-    m_hot_pixel_mask->load_from_CDB();
+    m_hot_pixel_mask->load_from_CDB("MVTX_HotPixelMap");
+  }
+  else if (m_restoreMaskedPixels && !m_doOfflineMasking)
+  {
+    // restoring masked hot and dead pixels back to the hitset container
+    m_hot_pixel_mask = new MvtxPixelMask();
+    m_hot_pixel_mask->load_from_CDB("MVTX_HotPixelMap");
+    m_dead_pixel_mask = new MvtxPixelMask();
+    m_dead_pixel_mask->load_from_CDB("MVTX_DeadPixelMap");
+  }
+  else if (m_restoreMaskedPixels && m_doOfflineMasking)
+  {
+    std::cout << PHWHERE << "::[WARNING] m_doOfflineMasking and m_restoreMaskedPixels are both set. This is contradictory." << std::endl;
+    return Fun4AllReturnCodes::ABORTRUN;
   }
 
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-//___________________________________________________________________________
+// ____________________________________________________________________________..
+// Restore a masked pixel back to the container for all valid strobe indices
+void MvtxCombinedRawDataDecoder::restorePixel(MvtxPixelDefs::pixelkey pxlkey,               //
+                                              const std::vector<int> &valid_strobe_indices  //
+)
+{
+  const uint8_t layer = MvtxPixelDefs::get_layer(pxlkey);
+  const uint8_t stave = MvtxPixelDefs::get_stave(pxlkey);
+  const uint8_t chip = MvtxPixelDefs::get_chip(pxlkey);
+  const TrkrDefs::hitkey hitkey = MvtxPixelDefs::get_hitkey(pxlkey);
+
+  for (const int strobe_index : valid_strobe_indices)
+  {
+    // Regenerate a proper hitsetkey using the current strobe index
+    const TrkrDefs::hitsetkey hitsetkey = MvtxDefs::genHitSetKey(layer, stave, chip, strobe_index);
+    if (!hitsetkey)
+    {
+      continue;
+    }
+
+    // Register in the helper
+    mvtx_hit_set_helper->addHitSetKey(strobe_index, hitsetkey);
+
+    const auto hitset_it = hit_set_container->findOrAddHitSet(hitsetkey);
+    if (!hitset_it->second->getHit(hitkey))
+    {
+      auto *hit = new TrkrHitv2;
+      hitset_it->second->addHitSpecificKey(hitkey, hit);
+    }
+  }
+}
+
+// ____________________________________________________________________________..
 int MvtxCombinedRawDataDecoder::process_event(PHCompositeNode *topNode)
 {
   GetNodes(topNode);
@@ -319,8 +344,7 @@ int MvtxCombinedRawDataDecoder::process_event(PHCompositeNode *topNode)
       mvtx_rawhit->identify();
     }
 
-    const TrkrDefs::hitsetkey hitsetkey =
-        MvtxDefs::genHitSetKey(layer, stave, chip, strobe_index);
+    const TrkrDefs::hitsetkey hitsetkey = MvtxDefs::genHitSetKey(layer, stave, chip, strobe_index);
     if (!hitsetkey)
     {
       continue;
@@ -340,14 +364,12 @@ int MvtxCombinedRawDataDecoder::process_event(PHCompositeNode *topNode)
     {
       if (Verbosity() > 1)
       {
-        std::cout << PHWHERE << "::" << __func__
-                  << " - duplicated hit, hitsetkey: " << hitsetkey
-                  << " hitkey: " << hitkey << std::endl;
+        std::cout << PHWHERE << "::" << __func__ << " - duplicated hit, hitsetkey: " << hitsetkey << " hitkey: " << hitkey << std::endl;
       }
       continue;
     }
 
-    if (m_doOfflineMasking)
+    if (m_doOfflineMasking && !m_restoreMaskedPixels)
     {
       if (!m_hot_pixel_mask->is_masked(mvtx_rawhit))
       {  // Check if the pixel is masked
@@ -362,15 +384,47 @@ int MvtxCombinedRawDataDecoder::process_event(PHCompositeNode *topNode)
     }
   }
 
+  // Restore masked hot and dead pixels back to the hitset container if the flag is set
+  if (m_restoreMaskedPixels && !m_doOfflineMasking)
+  {
+    std::vector<int> valid_strobe_indices;
+    for (auto it = strobe_list.cbegin(); it != strobe_list.cend(); ++it)
+    {
+      const int strobe_index = static_cast<int>(std::distance(strobe_list.cbegin(), it) - str_wGL1_idx);
+      if (strobe_index >= -16 && strobe_index <= 15)
+      {
+        valid_strobe_indices.push_back(strobe_index);
+      }
+    }
+
+    for (auto pxlkey : m_hot_pixel_mask->get_pixel_map())
+    {
+      restorePixel(pxlkey, valid_strobe_indices);
+    }
+
+    for (auto pxlkey : m_dead_pixel_mask->get_pixel_map())
+    {
+      restorePixel(pxlkey, valid_strobe_indices);
+    }
+
+    // check the number of hits after restoring masked pixels
+    if (Verbosity() > 10)
+    {
+      int total_hits = 0;
+      auto hitsetrange = hit_set_container->getHitSets(TrkrDefs::TrkrId::mvtxId);
+      for (auto hitsetiter = hitsetrange.first; hitsetiter != hitsetrange.second; ++hitsetiter)
+      {
+        total_hits += hitsetiter->second->size();
+      }
+      std::cout << "Total raw hits: " << mvtx_raw_hit_container->get_nhits() << ", total hits after restoring masked pixels: " << total_hits << std::endl; 
+    }
+  }
+
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
 //_____________________________________________________________________
-int MvtxCombinedRawDataDecoder::End(PHCompositeNode * /*topNode*/)
-{
-  return Fun4AllReturnCodes::EVENT_OK;
-}
-
+int MvtxCombinedRawDataDecoder::End(PHCompositeNode * /*topNode*/) { return Fun4AllReturnCodes::EVENT_OK; }
 
 // void MvtxCombinedRawDataDecoder::removeDuplicates(
 //     std::vector<std::pair<uint64_t, uint32_t> > &v)

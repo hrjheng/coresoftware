@@ -21,21 +21,22 @@ class MvtxPixelMask
   MvtxPixelMask() = default;
   ~MvtxPixelMask() { clear(); }
 
-  typedef std::vector<MvtxPixelDefs::pixelkey> hot_pixel_map_t;
+  typedef std::vector<MvtxPixelDefs::pixelkey> pixel_map_t;
 
-  void load_from_CDB();
+  // add an argument for hot and dead pixel map
+  void load_from_CDB(std::string mapname);
 
   void add_pixel(MvtxPixelDefs::pixelkey key);
   void remove_pixel(MvtxPixelDefs::pixelkey key);
 
   void clear();
 
-  bool is_masked(MvtxRawHit* hit) const;
+  bool is_masked(MvtxRawHit *hit) const;
 
-  const hot_pixel_map_t &get_hot_pixel_map() const { return m_hot_pixel_map; }
+  const pixel_map_t &get_pixel_map() const { return m_pixel_map; }
 
  private:
-  hot_pixel_map_t m_hot_pixel_map{};
+  pixel_map_t m_pixel_map{};
 };
 
 #endif  // MVTX_MVTXPIXELMASK_H

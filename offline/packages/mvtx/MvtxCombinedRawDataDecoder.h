@@ -51,6 +51,9 @@ class MvtxCombinedRawDataDecoder : public SubsysReco
 
   void doOfflineMasking(bool do_masking) { m_doOfflineMasking = do_masking; }
 
+  // flag to add masked hot pixels and dead pixels back to the hitset container
+  void restoreMaskedPixels(bool restore) { m_restoreMaskedPixels = restore; }
+
   void runMvtxTriggered(bool b = true) { m_mvtx_is_triggered = b; }
 
   void SetReadStrWidthFromDB(const bool val) { m_readStrWidthFromDB = val; }
@@ -62,6 +65,7 @@ class MvtxCombinedRawDataDecoder : public SubsysReco
   // static void removeDuplicates(std::vector<std::pair<uint64_t, uint32_t>>& v);
   void CreateNodes(PHCompositeNode*);
   void GetNodes(PHCompositeNode*);
+  void restorePixel(MvtxPixelDefs::pixelkey pxlkey, const std::vector<int>& valid_strobe_indices);
 
   uint64_t gl1rawhitbco = 0;
 
@@ -80,7 +84,10 @@ class MvtxCombinedRawDataDecoder : public SubsysReco
 
   // mask hot pixels
   bool m_doOfflineMasking{false};
+  // flag to add masked hot pixels and dead pixels back to the hitset container
+  bool m_restoreMaskedPixels{false};
   MvtxPixelMask* m_hot_pixel_mask{nullptr};
+  MvtxPixelMask* m_dead_pixel_mask{nullptr};
 
   bool m_mvtx_is_triggered{false};
 };
