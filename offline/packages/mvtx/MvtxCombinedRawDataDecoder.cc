@@ -241,15 +241,11 @@ int MvtxCombinedRawDataDecoder::InitRun(PHCompositeNode *topNode)
   return Fun4AllReturnCodes::EVENT_OK;
 }
 
-// ____________________________________________________________________________..
-// Note:
-// Restore a masked pixel into the hit container, but only for strobe indices where at least one existing hit lies within m_restoreProximity pixels
-// in both row and column on the same chip.  Pixels with no such neighbor are skipped, avoiding isolated fake single-pixel clusters that would
-// otherwise generate spurious seeds
-//
-// `findHitSet` is used for the neighbor search so that no empty hitsets are created for chips with no activity in a given strobe. `findOrAddHitSet` is called only if there is a neighbor
-void MvtxCombinedRawDataDecoder::restorePixel(MvtxPixelDefs::pixelkey pxlkey,
-                                               const std::vector<int> &valid_strobe_indices)
+// Restore a masked pixel into the hit container, but only for strobe indices where at least m_minNeighbors existing hits are strictly adjacent (i.e. face and diagonal neighbours, |drow|<=1 && |dcol|<=1 excluding self)
+// Pixels that do not meet the threshold are skipped to suppress fake single-pixel and isolated clusters that would otherwise generate spurious clusters and seeds
+void MvtxCombinedRawDataDecoder::restorePixel(MvtxPixelDefs::pixelkey pxlkey,//
+                                               const std::vector<int> &valid_strobe_indices//
+                                              )
 {
   const uint8_t layer           = MvtxPixelDefs::get_layer(pxlkey);
   const uint8_t stave           = MvtxPixelDefs::get_stave(pxlkey);
@@ -260,13 +256,13 @@ void MvtxCombinedRawDataDecoder::restorePixel(MvtxPixelDefs::pixelkey pxlkey,
 
   if (Verbosity() > 0)
   {
-    std::cout << PHWHERE << "Checking proximity for pixel: " << pxlkey
+    std::cout << PHWHERE << "Checking adjacency for pixel: " << pxlkey
               << " (layer: " << static_cast<unsigned int>(layer)
               << ", stave: " << static_cast<unsigned int>(stave)
               << ", chip: " << static_cast<unsigned int>(chip)
               << ", row: " << row << ", col: " << col
               << ", hitkey: " << hitkey
-              << ", proximity window: " << m_restoreProximity << ")" << std::endl;
+              << ", min neighbors required: " << m_minNeighbors << ")" << std::endl;
   }
 
   for (const int strobe_index : valid_strobe_indices)
@@ -284,30 +280,51 @@ void MvtxCombinedRawDataDecoder::restorePixel(MvtxPixelDefs::pixelkey pxlkey,
       continue;
     }
 
-    // Search for any existing hit within m_restoreProximity pixels in row and col
-    bool has_neighbor = false;
+    // Count existing hits that are strictly adjacent (face+diagonal neighbourhood).
+    // The pixel itself is excluded by skipping drow==0 && dcol==0.
+    int neighbor_count = 0;
     auto hit_range = hitset->getHits();
     for (auto hit_it = hit_range.first; hit_it != hit_range.second; ++hit_it)
     {
       const TrkrDefs::hitkey existing_hitkey = hit_it->first;
       const int drow = static_cast<int>(row) - static_cast<int>(MvtxDefs::getRow(existing_hitkey));
       const int dcol = static_cast<int>(col) - static_cast<int>(MvtxDefs::getCol(existing_hitkey));
-      if (std::abs(drow) <= m_restoreProximity && std::abs(dcol) <= m_restoreProximity)
+      if (drow == 0 && dcol == 0)
       {
-        has_neighbor = true;
+        // The masked pixel itself already exists as a genuine hit — no need to restore.
+        neighbor_count = m_minNeighbors;
         break;
+      }
+      if (std::abs(drow) <= 1 && std::abs(dcol) <= 1)
+      {
+        ++neighbor_count;
+        if (neighbor_count >= m_minNeighbors)
+        {
+          if (Verbosity() > 0)
+          {
+            std::cout << PHWHERE << "  -> found adjacent hit with hitkey " << existing_hitkey
+                      << " (drow: " << drow << ", dcol: " << dcol << ")" << std::endl;
+          }
+          break;
+        }
       }
     }
 
-    if (!has_neighbor)
+    if (neighbor_count < m_minNeighbors)
     {
-      // No nearby real hit in this strobe — skip
+      if (Verbosity() > 0)
+      {
+        std::cout << PHWHERE << "  -> only " << neighbor_count
+                  << " adjacent hit(s) in strobe " << strobe_index
+                  << " (need " << m_minNeighbors << ") — skipping" << std::endl;
+      }
       continue;
     }
 
     if (Verbosity() > 0)
     {
-      std::cout << PHWHERE << "  -> neighbor found in strobe " << strobe_index
+      std::cout << PHWHERE << "  -> " << neighbor_count
+                << " adjacent hit(s) found in strobe " << strobe_index
                 << ", restoring pixel (hitsetkey: " << hitsetkey
                 << ", hitkey: " << hitkey << ")" << std::endl;
     }
@@ -483,8 +500,7 @@ int MvtxCombinedRawDataDecoder::process_event(PHCompositeNode *topNode)
     // Restore hot pixels
     if (Verbosity() > 0)
     {
-      std::cout << PHWHERE << "::[INFO] Restoring masked hot pixels "
-                << "(proximity window: " << m_restoreProximity << " pixels)" << std::endl;
+      std::cout << PHWHERE << "::[INFO] Restoring masked hot pixels " << "(m_minNeighbors: " << m_minNeighbors << std::endl;
     }
 
     const auto &hot_pixel_map = m_hot_pixel_mask->get_pixel_map();
@@ -502,15 +518,14 @@ int MvtxCombinedRawDataDecoder::process_event(PHCompositeNode *topNode)
       std::cout << PHWHERE << " restorePixel [hot]: "
                 << n_hot_pixels << " pixels in map, "
                 << n_hot_restored << " restored "
-                << "(remainder had no neighbor within "
-                << m_restoreProximity << " pixels in any valid strobe)" << std::endl;
+                << "(remainder had no neighbor within m_minNeighbors=" << m_minNeighbors << " in any valid strobe)" << std::endl;
     }
 
     // Restore dead pixels
     if (Verbosity() > 0)
     {
       std::cout << PHWHERE << "::[INFO] Restoring dead pixels "
-                << "(proximity window: " << m_restoreProximity << " pixels)" << std::endl;
+                << "(m_minNeighbors: " << m_minNeighbors << " pixels)" << std::endl;
     }
 
     const auto &dead_pixel_map = m_dead_pixel_mask->get_pixel_map();
@@ -528,8 +543,7 @@ int MvtxCombinedRawDataDecoder::process_event(PHCompositeNode *topNode)
       std::cout << PHWHERE << " restorePixel [dead]: "
                 << n_dead_pixels << " pixels in map, "
                 << n_dead_restored << " restored "
-                << "(remainder had no neighbor within "
-                << m_restoreProximity << " pixels in any valid strobe)" << std::endl;
+                << "(remainder had no neighbor within m_minNeighbors=" << m_minNeighbors << " in any valid strobe)" << std::endl;
     }
 
     // Summary line

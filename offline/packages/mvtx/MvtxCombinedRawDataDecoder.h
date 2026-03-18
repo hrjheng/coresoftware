@@ -86,7 +86,7 @@ class MvtxCombinedRawDataDecoder : public SubsysReco
   bool m_doOfflineMasking{false};
   // flag to add masked hot pixels and dead pixels back to the hitset container
   bool m_restoreMaskedPixels{false};
-  int m_restoreProximity{5};  // pixels in row and col within which to restore masked pixels (can make it tunable with a public setter)
+  int m_minNeighbors{2};  // minimum number of neighboring pixels required to restore a masked pixel (can make it tunable with a public setter)
   MvtxPixelMask* m_hot_pixel_mask{nullptr};
   MvtxPixelMask* m_dead_pixel_mask{nullptr};
 
